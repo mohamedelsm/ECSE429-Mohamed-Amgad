@@ -3,6 +3,13 @@ import pytest
 
 BASE_URL = "http://localhost:4567"
 
+@pytest.fixture(autouse=True, scope="session")
+def check_api_running():
+    try:
+        requests.get(BASE_URL)
+    except requests.ConnectionError:
+        pytest.skip("API server is not running")
+        
 @pytest.fixture
 def sample_project():
     project_body = {"title": "TestProject", "description": "Temporary"}
