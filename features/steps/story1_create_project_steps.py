@@ -1,11 +1,11 @@
-from behave import given, when, then
+from behave import *
 import requests
-from setup import start_api, is_api_running
+from setup import start_api, is_api_running, stop_api
 
 BASE_URL = "http://localhost:4567/projects"
 
 
-
+# Background Step: Start the server if it's not already running
 @given('the server is running')
 def step_impl(context):
     # Start the API if it's not running
@@ -35,7 +35,7 @@ def step_impl(context, title):
 def step_impl(context):
     assert context.response.status_code == 201, f"Expected status code 201, got {context.response.status_code}"
 
-
+# Scenario Outline: Update an existing project (Alternative Flow)
 @when('the user updates the project with new title {new_title}, description {new_description}, and active status {new_active}')
 def step_impl(context, new_title, new_description, new_active):
     project_id = context.response.json()['projects'][0]["id"]
@@ -60,7 +60,6 @@ def step_impl(context):
 @given('a project with id {existing_id} already exists')
 def step_impl(context, existing_id):
     context.response = requests.get(f"{BASE_URL}/{existing_id}")
-    print(context.response.json())
     assert context.response.status_code == 200, f"Project with id '{existing_id}' does not exist"
 
 @when('the user tries to create a new project with id {existing_id}, title {title}, description {description}, and active status {active}')
@@ -75,5 +74,6 @@ def step_impl(context, existing_id, title, description, active):
 
 @then('the user is notified of the error')
 def step_impl(context):
-    print(context.response.status_code)
     assert context.response.status_code == 400, f"Expected status code 400, got {context.response.status_code}"
+
+
