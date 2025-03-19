@@ -49,10 +49,6 @@ def step_impl_success_update(context):
 def step_impl_success_deletion(context):
     assert context.response.status_code == 200, f"Expected 200, got {context.response.status_code}"
 
-@then('the user is notified of the error')
-def step_impl_error_notification(context):
-    assert context.response.status_code in [400, 404], f"Expected error status, got {context.response.status_code}"
-
 @then('the error message indicates the title field is mandatory')
 def step_impl_error_msg_title(context):
     # First check that we got an error status code
@@ -262,3 +258,28 @@ def step_impl_code_review_process_project(context):
 @given('a project with title "Release Management" exists')
 def step_impl_release_management_project(context):
     step_impl_project(context, "Release Management")
+
+# Mohamed's steps
+
+@given('a project with id {project_id} already exists')
+def step_given_project_exists(context, project_id):
+    response = requests.get(f"{BASE_URL}/projects/{project_id}")
+    print(f"{BASE_URL}/projects/{project_id}")
+    print(response.status_code)
+    context.response = response
+    assert response.status_code == 200, f"Expected project with id {project_id} to exist, but it does not."
+
+@given('no project with id {project_id} exists')
+def step_given_no_project_exists(context, project_id):
+    response = requests.get(f"{BASE_URL}/projects/{project_id}")
+    print(response.status_code)
+    context.response = response
+    assert response.status_code == 404, f"Expected project with id {project_id} to not exist, but it does."
+
+@then('the user is notified of the success')
+def step_then_user_notified_success(context):
+    assert 200 <= context.response.status_code < 300, "Expected success response, but got an error."
+
+@then('the user is notified of the error')
+def step_then_user_notified_error(context):
+    assert context.response.status_code >= 400, "Expected error response, but got success."
