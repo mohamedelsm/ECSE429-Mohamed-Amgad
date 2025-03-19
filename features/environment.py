@@ -1,32 +1,23 @@
-import requests
-
-BASE_URL = "http://localhost:4567"
+from setup import start_api, is_api_running, stop_api
 
 def before_scenario(context, scenario):
     print(f"\nStarting scenario: {scenario.name}")
-    # Ensure we have a clean state for each scenario
-    context.response = None
-    context.todo = None
-    context.project = None
-    context.category = None
 
 def after_scenario(context, scenario):
     print(f"\nFinished scenario: {scenario.name}")
-    # Cleanup any resources created during the scenario
-    if hasattr(context, 'todo') and context.todo and 'id' in context.todo:
-        try:
-            requests.delete(f"{BASE_URL}/todos/{context.todo['id']}")
-        except Exception as e:
-            print(f"Error deleting todo: {e}")
-    
-    if hasattr(context, 'project') and context.project and 'id' in context.project:
-        try:
-            requests.delete(f"{BASE_URL}/projects/{context.project['id']}")
-        except Exception as e:
-            print(f"Error deleting project: {e}")
-            
-    if hasattr(context, 'category') and context.category and 'id' in context.category:
-        try:
-            requests.delete(f"{BASE_URL}/categories/{context.category['id']}")
-        except Exception as e:
-            print(f"Error deleting category: {e}")
+
+def before_feature(context, feature):
+    print(f"Starting feature: {feature.name}")
+    # Start the API server before each feature
+    if not is_api_running():
+        context.api_process = start_api()
+    assert is_api_running(), "API did not start successfully."
+
+def after_feature(context, feature):
+    print(f"Finishing feature: {feature.name}")
+    # Stop the API server after each feature
+    if hasattr(context, 'api_process') and context.api_process:
+        stop_api(context.api_process)
+    else:
+        print("No API process found to stop.")
+    assert not is_api_running(), "API did not stop successfully."
